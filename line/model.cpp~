@@ -76,7 +76,7 @@ else if (!line.compare(0, 3, "vn ")) {
 	}
      
    }
-   load_texture(filename, "_diffuse.tga", diffusemap);
+   load_texture(filename, "obj/african_head_diffuse.tga", diffusemap);
    in_stream.close();
  }
 
