@@ -20,34 +20,45 @@ using namespace std;
       char trash ;
       if (!line.compare(0, 2, "v ")) {
 	float x,y,z ; 
-	vector<float> vec ; 
+	Vec3f vec ; 
 	iss >> trash >> x >> y >> z ; 
-	vec.push_back(x) ; 
+	//cout << "v\n" ; cout << x << "\n" ; cout << y << "\n" ; cout << z << "\n" ; 
+	vec[0] = x ; 
+	vec[1] = y ; 
+	vec[2] = z ;
+	/*vec.push_back(x) ; 
 	vec.push_back(y) ; 
-	vec.push_back(z) ; 
+	vec.push_back(z) ; */
 	vertices.push_back(vec) ; 
+	
       }
+else if (!line.compare(0, 3, "vn ")) {
+	float x,y,z ; 
+	vector<float> test ; 
+	iss >> trash >> trash >> x >> y >> z ; 
+	//cout << "vn\n" ; cout << x << "\n" ; cout << y << "\n" ; cout << z << "\n" ; 
+	test.push_back(x) ; 
+	test.push_back(y) ; 
+	test.push_back(z) ; 
+	vecNormalObj.push_back(test) ;
+	//cout << vecNormalObj.size() << "\n" ; 
+	//cout << vertices.size() << "\n" ; 
+     }
       else if (!line.compare(0, 2, "f ")) {
-	vector<int> vec ; 
+	vector<int> vec, vec2 ; 
 	int numberUseless ,number ; 
 	iss >> trash ; 
 	// recherche de pattern nombre/nombre/nombre et récupération du premier
 	while(iss >> number >> trash >> numberUseless >> trash >> numberUseless) {
 	  number -- ; 
+	  numberUseless -- ; 
+	  vec2.push_back(numberUseless) ; 
 	  vec.push_back(number) ; 
 	}
+	vertex.push_back(vec2) ; 
 	faces.push_back(vec) ; 
       }
      
-     else if (!line.compare(0, 2, "vn ")) {
-	float x,y,z ; 
-	vector<float> vec ; 
-	iss >> trash >> x >> y >> z ; 
-	vec.push_back(x) ; 
-	vec.push_back(y) ; 
-	vec.push_back(z) ; 
-	vecNormalObj.push_back(vec) ;
-     }
    }
    in_stream.close();
  }
@@ -58,7 +69,7 @@ void Model::produitVectoriel() {
 	  vector<float> stock ; 
 	  vector<float> avant ; 
 	  for ( int j=0 ; j<3 ; j++ ) {
-		vector<float> vec = vert(fa[j]) ;  
+		Vec3f vec = vert(fa[j]) ;  
 		float a = (vec[0]+1)*800 ;
 		a=a/2 ;  
 		float b = (vec[1]+1)*800 ;
@@ -104,9 +115,15 @@ int Model::nnorm() {
 std::vector<int> Model::face(int idx) {
 return faces[idx];
 }
-std::vector<float> Model::vert(int i) {
+std::vector<int> Model::vertexIdx(int idx) {
+return vertex[idx];
+}
+Vec3f Model::vert(int i) {
 return vertices[i];
 }
 std::vector<float> Model::norm(int i) {
 return normal[i];
+}
+std::vector<float> Model::vecNorm(int i) {
+return vecNormalObj[i];
 }
