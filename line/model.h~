@@ -1,6 +1,7 @@
 #define __MODEL_H__
 #include <vector>
 #include "geometry.h" 
+#include "tgaimage.h"
 class Model {
   
 
@@ -22,8 +23,9 @@ public :
     Vec3f vert(int i) ;
     std::vector<float> norm(int i) ;
     std::vector<float> vecNorm(int i) ;
-    Vec2f getUv(int i) ;
+    Vec3f getUv(int i) ;
     void produitVectoriel() ; 
     void load_texture(std::string filename, const char *suffix, TGAImage &img);
     TGAImage diffusemap;
+    TGAColor getTextures(int x, int y);
 };  

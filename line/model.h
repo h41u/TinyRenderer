@@ -12,7 +12,7 @@ public :
     std::vector<std::vector<int> > uv;
     std::vector<Vec3f> vertices; 
     std::vector<std::vector<float> > vecNormalObj ; 
-    std::vector<Vec2f> lineUv ;  
+    std::vector<Vec3f> lineUv ;  
     std::vector<std::vector<float> > normal ; 
     int nvertices() ;
     int nfaces() ;
@@ -23,8 +23,9 @@ public :
     Vec3f vert(int i) ;
     std::vector<float> norm(int i) ;
     std::vector<float> vecNorm(int i) ;
-    Vec2f getUv(int i) ;
+    Vec3f getUv(int i) ;
     void produitVectoriel() ; 
     void load_texture(std::string filename, const char *suffix, TGAImage &img);
     TGAImage diffusemap;
+    TGAColor getTextures(int x, int y);
 };  

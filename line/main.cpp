@@ -9,17 +9,17 @@
 #include <time.h>
 #include <limits>
 #include "geometry.h" 
-//http://habrahabr.ru/post/248723/
 using namespace std ; 
 
 
 const int width = 800 ; 
 const int height = 800 ; 
 const int depth = 800 ; 
-int tab[width][height] ; 
+int tab[width][height] ;  
 Vec3f light = Vec3f(0,0,1) ; 
 Vec3f center = Vec3f(0,0,0) ; 
-Vec3f camera = Vec3f(-5,0,3) ; 
+Vec3f camera = Vec3f(-5,2,3) ; 
+Model model("obj/african_head.obj") ; 
 
 
 Vec3f m2v(Matrix m) {
@@ -63,7 +63,7 @@ Matrix lookAt ( Vec3f eye , Vec3f center , Vec3f up ) {
   return result ; 
 }
 
-void line(TGAImage &image,int color, int x0, int y0, int z0,int vn0, int x1, int y1, int z1, int vn1) {
+void line(TGAImage &image, int x0, int y0, int z0,int vn0,int textx0, int texty0, int x1, int y1, int z1, int vn1, int textx1, int texty1) {
 	bool steep = false;
 	if (std::abs(x0-x1)<std::abs(y0-y1)) {
 		std::swap(x0, y0);
@@ -75,6 +75,8 @@ void line(TGAImage &image,int color, int x0, int y0, int z0,int vn0, int x1, int
 		std::swap(y0, y1);
 		std::swap(z0, z1);
 		std::swap(vn0, vn1);
+		std::swap(textx0, textx1);
+		std::swap(texty0, texty1);
 	}
 	int dx = x1-x0;
 	int dy = y1-y0;
@@ -86,17 +88,25 @@ void line(TGAImage &image,int color, int x0, int y0, int z0,int vn0, int x1, int
 		float t; 
 		if((x-x0)==(x1-x0)) { t=1 ; }
 		else {t = (x-x0)/(float)(x1-x0);}
+
 		int z = z0*(1.-t) + z1*t;
 		int intens = vn0*(1.-t) + vn1*t;
+		int textx = textx0*(1.-t) + textx1*t;
+		int texty = texty0*(1.-t) + texty1*t;
+		//cout << textx << " " << texty << "\n" ; 
+		TGAColor color = model.getTextures(textx,texty) ; 
+		//cout << color.r << color.g << color.b << "\n" ; 
 		if (steep) {
 			if (tab[y][x] < z ) {
-				image.set(y, x, TGAColor(intens,1));
+				//image.set(y, x, TGAColor(intens,1));
+				image.set(y, x,TGAColor(color.r,color.g,color.b,1));
 				tab[y][x] = z ; 
 			}
 			
 		} else {
 			if(tab[x][y] < z) {
-				image.set(x, y, TGAColor(intens,1));
+				//image.set(x, y, TGAColor(intens,1));
+				image.set(x, y,TGAColor(color.r,color.g,color.b,1));
 				tab[x][y] = z ; 
 			}
 		}
@@ -111,34 +121,39 @@ void line(TGAImage &image,int color, int x0, int y0, int z0,int vn0, int x1, int
 
 }
 
-void triangle2 (TGAImage &image,int color,Vec2f uv0, Vec3f d0,int vn0,Vec2f uv1, Vec3f d1, int vn1,Vec2f uv2, Vec3f d2, int vn2) {
-	int x0,x1,x2,y0,y1,y2,z0,z1,z2 ; 
-	x0 = d0.x ; 
-	x1 = d1.x ; 
-	x2 = d2.x ; 
-	y0 = d0.y ; 
-	y1 = d1.y ; 
-	y2 = d2.y ; 
-	z0 = d0.z ; 
-	z1 = d1.z ; 
-	z2 = d2.z ; 
+void triangle (TGAImage &image,Vec3f uv0, Vec3f d0,int vn0,Vec3f uv1, Vec3f d1, int vn1,Vec3f uv2, Vec3f d2, int vn2) {
+	
+	int x0,x1,x2,y0,y1,y2,z0,z1,z2,uvx0,uvx1,uvy0,uvy1,uvx2,uvy2 ; 
+	x0 = d0.x ; x1 = d1.x ; x2 = d2.x ; 
+	y0 = d0.y ; y1 = d1.y ; y2 = d2.y ; 
+	z0 = d0.z ; z1 = d1.z ; z2 = d2.z ; 
+	uvx0 = uv0.x ; uvy0 = uv0.y ; 
+	uvx1 = uv1.x ; uvy1 = uv1.y ; 
+	uvx2 = uv2.x ; uvy2 = uv2.y ; 
+
 	if (x0>x1) {
 		std::swap(x0, x1);
 		std::swap(y0, y1);
 		std::swap(z0, z1);
 		std::swap(vn0, vn1);
+		std::swap(uvx0, uvx1);
+		std::swap(uvy0, uvy1);
 	}
 	if (x0>x2) {
 		std::swap(x0, x2);
 		std::swap(y0, y2);
 		std::swap(z0, z2);
 		std::swap(vn0, vn2);
+		std::swap(uvx0, uvx2);
+		std::swap(uvy0, uvy2);
 	}
 	if (x1>x2) {
 		std::swap(x1, x2);
 		std::swap(y1, y2);
 		std::swap(z1, z2);
 		std::swap(vn1, vn2);
+		std::swap(uvx1, uvx2);
+		std::swap(uvy1, uvy2);
 	}
 	float t, t2 ; 
 	for (int x=x0; x<=x1; x++) { 
@@ -148,14 +163,18 @@ void triangle2 (TGAImage &image,int color,Vec2f uv0, Vec3f d0,int vn0,Vec2f uv1,
 		int y = y0*(1.-t) + y1*t;
 		int z = z0*(1.-t) + z1*t;
 		int vn = vn0*(1.-t) + vn1*t;
+		int textx = uvx0*(1.-t) + uvx1*t;
+		int texty = uvy0*(1.-t) + uvy1*t;
 		
 		if((x-x0)==(x2-x0)) { t2=1; }
 		else {t2 = (x-x0)/(float)(x2-x0);}
 		int ybis = y0*(1.-t2) + y2*t2;
 		int zbis = z0*(1.-t2) + z2*t2;
 		int vnbis = vn0*(1.-t2) + vn2*t2;
+		int textxbis = uvx0*(1.-t2) + uvx2*t2;
+		int textybis = uvy0*(1.-t2) + uvy2*t2;
 		
-		line(image,color, x,y,z,vn,x,ybis,zbis,vnbis);
+		line(image,x,y,z,vn,textx,texty,x,ybis,zbis,vnbis,textxbis,textybis);
   	}
  	for (int x=x1; x<=x2; x++) { 
 		if((x-x1)==(x2-x1)) { t=1 ; }
@@ -163,74 +182,25 @@ void triangle2 (TGAImage &image,int color,Vec2f uv0, Vec3f d0,int vn0,Vec2f uv1,
 		int y = y1*(1.-t) + y2*t;
 		int z = z1*(1.-t) + z2*t;
 		int vn = vn1*(1.-t) + vn2*t;
+		int textx = uvx1*(1.-t) + uvx2*t;
+		int texty = uvy1*(1.-t) + uvy2*t;
 
 		if((x-x0)==(x2-x0)) { t2=1; }
 		else {t2 = (x-x0)/(float)(x2-x0);}
 		int ybis = y0*(1.-t2) + y2*t2;
 		int zbis = z0*(1.-t2) + z2*t2;
 		int vnbis = vn0*(1.-t2) + vn2*t2;
+		int textxbis = uvx0*(1.-t2) + uvx2*t2;
+		int textybis = uvy0*(1.-t2) + uvy2*t2;
 
-		line(image,color, x,y,z,vn,x,ybis,zbis,vnbis);
+		line(image,x,y,z,vn,textx,texty,x,ybis,zbis,vnbis,textxbis,textybis);
  	}
 
 }
 
-/*void triangle (TGAImage &image,int color, int x0, int y0,int z0,int vn0, int x1, int y1, int z1,int vn1, int x2, int y2, int z2, int vn2) {
-	if (x0>x1) {
-		std::swap(x0, x1);
-		std::swap(y0, y1);
-		std::swap(z0, z1);
-		std::swap(vn0, vn1);
-	}
-	if (x0>x2) {
-		std::swap(x0, x2);
-		std::swap(y0, y2);
-		std::swap(z0, z2);
-		std::swap(vn0, vn2);
-	}
-	if (x1>x2) {
-		std::swap(x1, x2);
-		std::swap(y1, y2);
-		std::swap(z1, z2);
-		std::swap(vn1, vn2);
-	}
-	float t, t2 ; 
-	for (int x=x0; x<=x1; x++) { 
-		if((x-x0)==(x1-x0)) { t=1 ; }
-		else {t = (x-x0)/(float)(x1-x0);}
-		
-		int y = y0*(1.-t) + y1*t;
-		int z = z0*(1.-t) + z1*t;
-		int vn = vn0*(1.-t) + vn1*t;
-		
-		if((x-x0)==(x2-x0)) { t2=1; }
-		else {t2 = (x-x0)/(float)(x2-x0);}
-		int ybis = y0*(1.-t2) + y2*t2;
-		int zbis = z0*(1.-t2) + z2*t2;
-		int vnbis = vn0*(1.-t2) + vn2*t2;
-		
-		line(image,color, x,y,z,vn,x,ybis,zbis,vnbis);
-  	}
- 	for (int x=x1; x<=x2; x++) { 
-		if((x-x1)==(x2-x1)) { t=1 ; }
-		else {t = (x-x1)/(float)(x2-x1);}
-		int y = y1*(1.-t) + y2*t;
-		int z = z1*(1.-t) + z2*t;
-		int vn = vn1*(1.-t) + vn2*t;
-
-		if((x-x0)==(x2-x0)) { t2=1; }
-		else {t2 = (x-x0)/(float)(x2-x0);}
-		int ybis = y0*(1.-t2) + y2*t2;
-		int zbis = z0*(1.-t2) + z2*t2;
-		int vnbis = vn0*(1.-t2) + vn2*t2;
-
-		line(image,color, x,y,z,vn,x,ybis,zbis,vnbis);
- 	}
-
-}*/
-
 int main() {
-  
+  	//TGAColor color = model.getTextures(1022,1023) ; 
+	//cout << color.r << color.g << color.b << "\n" ; 
 	Matrix view = lookAt(camera,center,Vec3f(0,1,0)) ; 
 	Matrix port = viewPort(width/8,height/8,width*3/4,height*3/4) ; 
 	Matrix proj = Matrix::identity(4) ;
@@ -241,47 +211,34 @@ int main() {
 			tab[a][b] =  std::numeric_limits<int>::min();
 		}
 	}
-	Model model("obj/african_head.obj") ; 
-//	model.produitVectoriel() ; 
+
 	for (int i=0; i<model.nfaces(); i++) {
 	  vector<int> fa = model.face(i) ;  
 	  vector<int> vex = model.vertexIdx(i) ; 
-	  /*vector<float> vt = model.getUv(0) ; 
-	  cout << vt[0] << "\n" ; */
 	  vector<int> vt = model.getLineUv(i) ; 
-	  //cout << vt[2] << "\n" ; 
-	  vector<float> drawLine ; 
-//	  vector<float> norm = model.norm(i) ; 
-	  //float x,y,z,vns ;
+	  //cout << vt[0] << " "<< vt[1] << " " << vt[2] << "\n" ; 
+	  vector<float> intens ; 
 	  float vns ; 
-	  Vec3f b[3] ; 
-	  Vec2f uv[3] ;
-	  vector<Vec3f> test ;  
+	  Vec3f coord[3] ; 
+	  Vec3f uv[3] ;  
 	  for ( int j=0 ; j<3 ; j++ ) { 
 		Vec3f vec = model.vert(fa[j]) ;  
-		uv[j] = model.getUv(vt[j]) ; 
+		Vec3f uvtest = model.getUv(vt[j])*1024 ; 
+		//cout << uvtest[0] << " " << uvtest[1] << "\n" ; 
+		uv[j] = uvtest ; 
+		//cout << j<< " bonjour " << uv[j] << "\n" ; 
+		//cout << j << "\n" ; 
 		vector<float> vecNorm = model.vecNorm(vex[j]) ;	
-		b[j] = port*proj*view*v2m(vec) ; 
-		/*x = (vec[0]+1)*width ;
-		x=x/2 ;  
-		y = (vec[1]+1)*height ;
-		y=y/2 ;  
-		z = (vec[2]+1)*depth ;
-		z=z/2 ;  
-		drawLine.push_back(x) ; 
-		drawLine.push_back(y) ; 
-		drawLine.push_back(z) ;*/
+		coord[j] = port*proj*view*v2m(vec) ; 
 		// scalaire avec lumière
 		vns = vecNorm[0]*light[0] + vecNorm[1]*light[1] + vecNorm[2]*light[2] ; 
 		if(vns < 0) {vns = 0;}
 		if(vns > 1) {vns = 1;}
 		vns = vns * 255 ;
-		drawLine.push_back(vns) ;
-	  }				
-//	float pdtScalaire = norm[0]*light[0] + norm[1]*light[1] + norm[2]*light[2] ;
-//	pdtScalaire = pdtScalaire*255 ; 
-	/*triangle(image,pdtScalaire,drawLine[0],drawLine[1],drawLine[2],drawLine[3],drawLine[4],drawLine[5],drawLine[6],drawLine[7],drawLine[8],drawLine[9],drawLine[10],drawLine[11]) ; */
-	triangle2(image,-564654654,uv[0],b[0],drawLine[0],uv[1],b[1],drawLine[1],uv[2],b[2],drawLine[2]) ;
+		intens.push_back(vns) ;
+	  }
+	  //cout << uv[0] << " " << uv[1] << "\n"  ; 				
+	  triangle(image,uv[0],coord[0],intens[0],uv[1],coord[1],intens[1],uv[2],coord[2],intens[2]) ;
 	}
 
 	image.flip_vertically();

@@ -65,7 +65,7 @@ else if (!line.compare(0, 3, "vn ")) {
       }
 	else if (!line.compare(0,3,"vt ")) {
 	float x,y,z ; 
-	Vec2f test ; 
+	Vec3f test ; 
 	iss >> trash >> trash >> x >> y >> z ; 
 	test[0]=x ; 
 	test[1]=y ; 
@@ -80,45 +80,7 @@ else if (!line.compare(0, 3, "vn ")) {
    in_stream.close();
  }
 
-void Model::produitVectoriel() { 
-	for (int i=0; i<nfaces(); i++) {
-	  vector<int> fa = face(i) ;
-	  vector<float> stock ; 
-	  vector<float> avant ; 
-	  for ( int j=0 ; j<3 ; j++ ) {
-		Vec3f vec = vert(fa[j]) ;  
-		float a = (vec[0]+1)*800 ;
-		a=a/2 ;  
-		float b = (vec[1]+1)*800 ;
-		b=b/2 ;  
-		float c = (vec[2]+1)*800 ;
-		c=c/2 ;  
-		stock.push_back(a) ; 
-		stock.push_back(b) ;
-		stock.push_back(c) ;  
-	  }
-	avant.push_back(stock[3]-stock[0]) ; 
-	avant.push_back(stock[4]-stock[1]) ;
-	avant.push_back(stock[5]-stock[2]) ;  
-	avant.push_back(stock[6]-stock[0]) ; 
-	avant.push_back(stock[7]-stock[1]) ;
-	avant.push_back(stock[8]-stock[2]) ; 
-	vector<float> vec2 ; 
-	vec2.push_back((avant[1]*avant[5])-(avant[2]*avant[4])) ; 
-	vec2.push_back((avant[2]*avant[3])-(avant[0]*avant[5])) ;
-	vec2.push_back((avant[0]*avant[4])-(avant[1]*avant[3])) ;
-	float x = vec2[0] ; 
-	float y = vec2[1] ; 
-	float z = vec2[2] ; 
-	float taille = sqrt( (x*x)+(y*y)+(z*z) ) ; 
-	vector<float> vec3 ; 
-	vec3.push_back(x/taille) ; 
-	vec3.push_back(y/taille) ; 
-	vec3.push_back(z/taille) ; 
-	normal.push_back(vec3) ;
-	}
-	
-}
+
  
 int Model::nvertices() {
   return (int)vertices.size();
@@ -147,8 +109,11 @@ return normal[i];
 std::vector<float> Model::vecNorm(int i) {
 return vecNormalObj[i];
 }
-Vec2f Model::getUv(int i) {
+Vec3f Model::getUv(int i) {
 return lineUv[i];
+}
+TGAColor Model::getTextures(int x, int y) {
+return diffusemap.get(x,y);
 }
 
 void Model::load_texture(std::string filename, const char *suffix, TGAImage &img) {
