@@ -90,22 +90,18 @@ void line(TGAImage &image, int x0, int y0, int z0,int vn0,int textx0, int texty0
 		else {t = (x-x0)/(float)(x1-x0);}
 
 		int z = z0*(1.-t) + z1*t;
-		int intens = vn0*(1.-t) + vn1*t;
+		//int intens = vn0*(1.-t) + vn1*t;
 		int textx = textx0*(1.-t) + textx1*t;
 		int texty = texty0*(1.-t) + texty1*t;
-		//cout << textx << " " << texty << "\n" ; 
 		TGAColor color = model.getTextures(textx,texty) ; 
-		//cout << color.r << color.g << color.b << "\n" ; 
 		if (steep) {
 			if (tab[y][x] < z ) {
-				//image.set(y, x, TGAColor(intens,1));
 				image.set(y, x,TGAColor(color.r,color.g,color.b,1));
 				tab[y][x] = z ; 
 			}
 			
 		} else {
 			if(tab[x][y] < z) {
-				//image.set(x, y, TGAColor(intens,1));
 				image.set(x, y,TGAColor(color.r,color.g,color.b,1));
 				tab[x][y] = z ; 
 			}
@@ -199,13 +195,11 @@ void triangle (TGAImage &image,Vec3f uv0, Vec3f d0,int vn0,Vec3f uv1, Vec3f d1, 
 }
 
 int main() {
-  	//TGAColor color = model.getTextures(1022,1023) ; 
-	//cout << color.r << color.g << color.b << "\n" ; 
 	Matrix view = lookAt(camera,center,Vec3f(0,1,0)) ; 
 	Matrix port = viewPort(width/8,height/8,width*3/4,height*3/4) ; 
 	Matrix proj = Matrix::identity(4) ;
 	proj[3][2] = -1.f/(camera-center).norm() ; 
-	TGAImage image(800, 800, 1);
+	TGAImage image(800, 800, TGAImage::RGB);
 	for (int a=0 ; a<width ; a++ ) {
 		for(int b=0 ; b<height ; b++) {
 			tab[a][b] =  std::numeric_limits<int>::min();
@@ -216,7 +210,6 @@ int main() {
 	  vector<int> fa = model.face(i) ;  
 	  vector<int> vex = model.vertexIdx(i) ; 
 	  vector<int> vt = model.getLineUv(i) ; 
-	  //cout << vt[0] << " "<< vt[1] << " " << vt[2] << "\n" ; 
 	  vector<float> intens ; 
 	  float vns ; 
 	  Vec3f coord[3] ; 
@@ -224,20 +217,15 @@ int main() {
 	  for ( int j=0 ; j<3 ; j++ ) { 
 		Vec3f vec = model.vert(fa[j]) ;  
 		Vec3f uvtest = model.getUv(vt[j])*1024 ; 
-		//cout << uvtest[0] << " " << uvtest[1] << "\n" ; 
 		uv[j] = uvtest ; 
-		//cout << j<< " bonjour " << uv[j] << "\n" ; 
-		//cout << j << "\n" ; 
 		vector<float> vecNorm = model.vecNorm(vex[j]) ;	
 		coord[j] = port*proj*view*v2m(vec) ; 
-		// scalaire avec lumière
 		vns = vecNorm[0]*light[0] + vecNorm[1]*light[1] + vecNorm[2]*light[2] ; 
 		if(vns < 0) {vns = 0;}
 		if(vns > 1) {vns = 1;}
 		vns = vns * 255 ;
 		intens.push_back(vns) ;
 	  }
-	  //cout << uv[0] << " " << uv[1] << "\n"  ; 				
 	  triangle(image,uv[0],coord[0],intens[0],uv[1],coord[1],intens[1],uv[2],coord[2],intens[2]) ;
 	}
 

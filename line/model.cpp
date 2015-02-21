@@ -21,8 +21,7 @@ using namespace std;
       if (!line.compare(0, 2, "v ")) {
 	float x,y,z ; 
 	Vec3f vec ; 
-	iss >> trash >> x >> y >> z ; 
-	//cout << "v\n" ; cout << x << "\n" ; cout << y << "\n" ; cout << z << "\n" ; 
+	iss >> trash >> x >> y >> z ;  
 	vec[0] = x ; 
 	vec[1] = y ; 
 	vec[2] = z ;
@@ -33,16 +32,12 @@ else if (!line.compare(0, 3, "vn ")) {
 	float x,y,z ; 
 	vector<float> test ; 
 	iss >> trash >> trash >> x >> y >> z ; 
-	//cout << "vn\n" ; cout << x << "\n" ; cout << y << "\n" ; cout << z << "\n" ; 
 	test.push_back(x) ; 
 	test.push_back(y) ; 
 	test.push_back(z) ; 
 	vecNormalObj.push_back(test) ;
-	//cout << vecNormalObj.size() << "\n" ; 
-	//cout << vertices.size() << "\n" ; 
      }
       else if (!line.compare(0, 2, "f ")) {
-	//cout << "bonjour\n" ; 
 	vector<int> vec, vec2, vec3 ; 
 	int numberUseless ,number, numberVt ; 
 	iss >> trash ; 
@@ -50,11 +45,8 @@ else if (!line.compare(0, 3, "vn ")) {
 	while(iss >> number >> trash >> numberVt >> trash >> numberUseless) {
 	  number -- ; 
 	  numberUseless -- ;
-	  //cout << numberVt << "\n" ;  
 	  numberVt -- ; 
-	 // cout << numberVt << "\n" ;
 	  vec3.push_back(numberVt) ; 
-	  //cout<< "vec3 " << vec3[2] << "\n" ; 
 	  vec2.push_back(numberUseless) ; 
 	  vec.push_back(number) ; 
 
@@ -71,8 +63,6 @@ else if (!line.compare(0, 3, "vn ")) {
 	test[1]=y ; 
 	test[2]=z ;  
 	lineUv.push_back(test) ;
-	/*vector<float> b = getUv(0) ; 	
-	cout << b[0] << "\n" ; */	
 	}
      
    }
