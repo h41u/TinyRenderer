@@ -18,7 +18,7 @@ const int depth = 800 ;
 int tab[width][height] ;  
 Vec3f light = Vec3f(0,0,1) ; 
 Vec3f center = Vec3f(0,0,0) ; 
-Vec3f camera = Vec3f(5,2,3) ; 
+Vec3f camera = Vec3f(5,-2,3) ; 
 Model model("obj/african_head.obj") ; 
 
 
